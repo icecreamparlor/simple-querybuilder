@@ -21,15 +21,17 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     return this as Pick<MySqlSelectQueryBuilder<P>, "from">;
   }
   from(
-    tableName: string
-    // | (<T extends readonly string[]>(
-    //     qb: MySqlSelectQueryBuilder<T>
-    //   ) => string)
+    tableName:
+      | string
+      | (<T extends readonly string[]>(
+          qb: MySqlSelectQueryBuilder<T>
+        ) => string)
   ) {
-    this._fromClause = tableName;
-    // typeof tableName === "function"
-    //   ? tableName(MySqlSelectQueryBuilder.getBuilder())
-    //   : tableName;
+    // this._fromClause = tableName;
+    this._fromClause =
+      typeof tableName === "function"
+        ? tableName(MySqlSelectQueryBuilder.getBuilder())
+        : tableName;
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
@@ -54,13 +56,14 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     >;
   }
   where(
-    whereClause: string
-    // | (<T extends readonly string[]>(
-    //     qb: MySqlSelectQueryBuilder<T>
-    //   ) => string)
+    whereClause:
+      | string
+      | (<T extends readonly string[]>(
+          qb: MySqlSelectQueryBuilder<T>
+        ) => string)
   ) {
-    // this._whereClause += this.parseWhereClause(whereClause);
-    this._whereClause = whereClause;
+    this._whereClause += this.parseWhereClause(whereClause);
+    // this._whereClause = whereClause;
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
@@ -68,10 +71,11 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     >;
   }
   andWhere(
-    whereClause: string
-    // | (<T extends readonly string[]>(
-    //     qb: MySqlSelectQueryBuilder<T>
-    //   ) => string)
+    whereClause:
+      | string
+      | (<T extends readonly string[]>(
+          qb: MySqlSelectQueryBuilder<T>
+        ) => string)
   ) {
     this._whereClause += `
     AND (
@@ -85,10 +89,11 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     >;
   }
   orWhere(
-    whereClause: string
-    // | (<T extends readonly string[]>(
-    //     qb: MySqlSelectQueryBuilder<T>
-    //   ) => string)
+    whereClause:
+      | string
+      | (<T extends readonly string[]>(
+          qb: MySqlSelectQueryBuilder<T>
+        ) => string)
   ) {
     this._whereClause += `
     OR (
@@ -104,6 +109,8 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
   async execute(): Promise<
     {
       [Key in T[number] as Key extends `${string} ${As} ${infer Column}`
+        ? `${Column}`
+        : Key extends `${string}.${infer Column}:${NumberSuffix | StringSuffix}`
         ? `${Column}`
         : Key extends `${string}.${infer Column}`
         ? `${Column}`
@@ -124,20 +131,21 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 SELECT ${this._columns.join(", ").trim()}
 FROM ${this._fromClause.trim()}
 ${this._joinClause.trim()}
-WHERE ${this._whereClause.trim()}
+${!!this._whereClause.trim() ? `WHERE ${this._whereClause.trim()}` : ""}
     `.trim();
   }
 
   private parseWhereClause(
-    whereClause: string
-    // | (<T extends readonly string[]>(
-    //     qb: MySqlSelectQueryBuilder<T>
-    //   ) => string)
+    whereClause:
+      | string
+      | (<T extends readonly string[]>(
+          qb: MySqlSelectQueryBuilder<T>
+        ) => string)
   ) {
-    return whereClause;
-    // return typeof whereClause === "function"
-    //   ? whereClause(MySqlSelectQueryBuilder.getBuilder())
-    //   : whereClause;
+    // return whereClause;
+    return typeof whereClause === "function"
+      ? whereClause(MySqlSelectQueryBuilder.getBuilder())
+      : whereClause;
   }
 
   private join(joinTable: string, type: "inner" | "left" | "right") {

@@ -4,6 +4,7 @@ describe("MySqlSelectQueryBuilder TEST", () => {
   it("TEST", async () => {
     const result = await MySqlSelectQueryBuilder.getBuilder()
       .select([
+        "ID:number",
         "O.ID AS id",
         "O.OrderName AS orderName",
         "O.TotalPrice AS totalPrice",
@@ -31,8 +32,8 @@ describe("MySqlSelectQueryBuilder TEST", () => {
           .getQuery()}
       ) AS A`
       )
-      .execute();
-    // .getQuery();
+      // .execute();
+      .getQuery();
 
     console.log(result);
   });
@@ -49,6 +50,7 @@ describe("MySqlSelectQueryBuilder TEST", () => {
           .getQuery()}
       ) AS A`
       )
+      // .getQuery();
       .execute();
 
     console.log(result);
