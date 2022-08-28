@@ -3,7 +3,7 @@ import { As, NumberSuffix, OnClause, StringSuffix } from "../../type";
 
 export class MySqlSelectQueryBuilder<T extends readonly string[]>
   implements SelectQueryBuilder {
-  private _columns: readonly string[];
+  private _columns: T;
   private _fromClause = "";
   private _joinClause = "";
   private _onClause = "";
@@ -15,19 +15,24 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     return new this();
   }
 
-  select(columns: readonly string[]) {
+  select<P extends T>(columns: P) {
     this._columns = columns;
 
-    return this as Pick<MySqlSelectQueryBuilder<typeof columns>, "from">;
+    return this as Pick<MySqlSelectQueryBuilder<P>, "from">;
   }
-  from(tableName: string | ((qb: MySqlSelectQueryBuilder<T>) => string)) {
-    this._fromClause =
-      typeof tableName === "function"
-        ? tableName(MySqlSelectQueryBuilder.getBuilder())
-        : tableName;
+  from(
+    tableName: string
+    // | (<T extends readonly string[]>(
+    //     qb: MySqlSelectQueryBuilder<T>
+    //   ) => string)
+  ) {
+    this._fromClause = tableName;
+    // typeof tableName === "function"
+    //   ? tableName(MySqlSelectQueryBuilder.getBuilder())
+    //   : tableName;
 
     return this as Pick<
-      MySqlSelectQueryBuilder<T>,
+      MySqlSelectQueryBuilder<typeof this._columns>,
       "where" | "execute" | "innerJoin" | "leftJoin" | "rightJoin" | "getQuery"
     >;
   }
@@ -44,19 +49,30 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     this._onClause = onClause;
 
     return this as Pick<
-      MySqlSelectQueryBuilder<T>,
+      MySqlSelectQueryBuilder<typeof this._columns>,
       "where" | "execute" | "getQuery"
     >;
   }
-  where(whereClause: string | ((qb: MySqlSelectQueryBuilder<T>) => string)) {
-    this._whereClause += this.parseWhereClause(whereClause);
+  where(
+    whereClause: string
+    // | (<T extends readonly string[]>(
+    //     qb: MySqlSelectQueryBuilder<T>
+    //   ) => string)
+  ) {
+    // this._whereClause += this.parseWhereClause(whereClause);
+    this._whereClause = whereClause;
 
     return this as Pick<
-      MySqlSelectQueryBuilder<T>,
+      MySqlSelectQueryBuilder<typeof this._columns>,
       "execute" | "andWhere" | "orWhere" | "getQuery"
     >;
   }
-  andWhere(whereClause: string | ((qb: MySqlSelectQueryBuilder<T>) => string)) {
+  andWhere(
+    whereClause: string
+    // | (<T extends readonly string[]>(
+    //     qb: MySqlSelectQueryBuilder<T>
+    //   ) => string)
+  ) {
     this._whereClause += `
     AND (
       ${this.parseWhereClause(whereClause)}
@@ -64,11 +80,16 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     `;
 
     return this as Pick<
-      MySqlSelectQueryBuilder<T>,
+      MySqlSelectQueryBuilder<typeof this._columns>,
       "execute" | "andWhere" | "orWhere" | "getQuery"
     >;
   }
-  orWhere(whereClause: string | ((qb: MySqlSelectQueryBuilder<T>) => string)) {
+  orWhere(
+    whereClause: string
+    // | (<T extends readonly string[]>(
+    //     qb: MySqlSelectQueryBuilder<T>
+    //   ) => string)
+  ) {
     this._whereClause += `
     OR (
       ${this.parseWhereClause(whereClause)}
@@ -76,7 +97,7 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     `;
 
     return this as Pick<
-      MySqlSelectQueryBuilder<T>,
+      MySqlSelectQueryBuilder<typeof this._columns>,
       "execute" | "andWhere" | "orWhere" | "getQuery"
     >;
   }
@@ -108,16 +129,20 @@ WHERE ${this._whereClause.trim()}
   }
 
   private parseWhereClause(
-    whereClause: string | ((qb: MySqlSelectQueryBuilder<T>) => string)
+    whereClause: string
+    // | (<T extends readonly string[]>(
+    //     qb: MySqlSelectQueryBuilder<T>
+    //   ) => string)
   ) {
-    return typeof whereClause === "function"
-      ? whereClause(MySqlSelectQueryBuilder.getBuilder())
-      : whereClause;
+    return whereClause;
+    // return typeof whereClause === "function"
+    //   ? whereClause(MySqlSelectQueryBuilder.getBuilder())
+    //   : whereClause;
   }
 
   private join(joinTable: string, type: "inner" | "left" | "right") {
     this._joinClause = `${type.toUpperCase()} JOIN ${joinTable}`;
 
-    return this as Pick<MySqlSelectQueryBuilder<T>, "on">;
+    return this as Pick<MySqlSelectQueryBuilder<typeof this._columns>, "on">;
   }
 }
