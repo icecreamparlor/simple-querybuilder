@@ -5,19 +5,34 @@ describe("MySqlSelectQueryBuilder TEST", () => {
     const result = await MySqlSelectQueryBuilder.getBuilder()
       .select([
         "ID:number",
-        "O.ID AS id",
+        "O.ID AS id:number",
         "O.OrderName AS orderName",
         "O.TotalPrice AS totalPrice",
         "OI.OrderItemName AS orderItemName",
       ] as const)
       .from("Order AS O")
-      .innerJoin("OrderItem AS OI")
+      .leftJoin("OrderItem AS OI")
       .on("O.ID = OI.OrderID")
       .where("O.OrderID = 1")
       .andWhere("O.OrderID IN (1,2,3,4,5)")
       .execute();
 
     console.log(result);
+
+    const result2 = await MySqlSelectQueryBuilder.getBuilder()
+      .select([
+        "U.ID AS id:number",
+        "U.UserName AS userName",
+        "O.TotalPrice:number",
+      ] as const)
+      .from("UserInfo AS U")
+      .innerJoin("Order AS O")
+      .on("U.ID = O.UserID")
+      .where("U.ID=123")
+      .andWhere("O.TotalPrice > 3000")
+      .getQuery();
+
+    console.log(result2);
   });
 
   it("TEST2", async () => {
@@ -50,8 +65,8 @@ describe("MySqlSelectQueryBuilder TEST", () => {
           .getQuery()}
       ) AS A`
       )
-      // .getQuery();
-      .execute();
+      .getQuery();
+    // .execute();
 
     console.log(result);
   });

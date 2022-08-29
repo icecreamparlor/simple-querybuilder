@@ -6,13 +6,13 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
   private _columns: T;
   private _fromClause = "";
   private _joinClause = "";
-  private _onClause = "";
+  // private _onClause = "";
   private _whereClause = "";
 
   private constructor() {}
 
   static getBuilder() {
-    return new this();
+    return new this() as Pick<MySqlSelectQueryBuilder<any>, "select">;
   }
 
   select<P extends T>(columns: P) {
@@ -27,7 +27,6 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
           qb: MySqlSelectQueryBuilder<T>
         ) => string)
   ) {
-    // this._fromClause = tableName;
     this._fromClause =
       typeof tableName === "function"
         ? tableName(MySqlSelectQueryBuilder.getBuilder())
@@ -48,7 +47,7 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
     return this.join(joinTable, "right");
   }
   on(onClause: OnClause) {
-    this._onClause = onClause;
+    this._joinClause += `\n ON ${onClause}`;
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
@@ -63,7 +62,6 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
         ) => string)
   ) {
     this._whereClause += this.parseWhereClause(whereClause);
-    // this._whereClause = whereClause;
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
@@ -108,15 +106,26 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
   }
   async execute(): Promise<
     {
-      [Key in T[number] as Key extends `${string} ${As} ${infer Column}`
+      [Key in T[number] as Key extends  // ColumnName As C:number
+      `${string} ${As} ${infer Column}:${NumberSuffix | StringSuffix}`
         ? `${Column}`
-        : Key extends `${string}.${infer Column}:${NumberSuffix | StringSuffix}`
+        : // C.ColumnName:number
+        Key extends `${string}.${infer Column}:${NumberSuffix | StringSuffix}`
         ? `${Column}`
-        : Key extends `${string}.${infer Column}`
+        : Key extends  // ColumnName AS C
+          `${string} ${As} ${infer Column}`
         ? `${Column}`
-        : Key extends `${infer Column}`
+        : // ColumnName:number
+        Key extends `${infer Column}:${NumberSuffix | StringSuffix}`
+        ? `${Column}`
+        : // C.ColumnName
+        Key extends `${string}.${infer Column}`
+        ? `${Column}`
+        : // ColumnName
+        Key extends `${infer Column}`
         ? Column
-        : never]: Key extends `${string}:${NumberSuffix}`
+        : never]: Key extends  // // ColumnName AS CN
+      `${string}:${NumberSuffix}`
         ? number
         : Key extends `${string}:${StringSuffix}`
         ? string
@@ -127,12 +136,18 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
   }
 
   getQuery() {
-    return `
-SELECT ${this._columns.join(", ").trim()}
-FROM ${this._fromClause.trim()}
-${this._joinClause.trim()}
-${!!this._whereClause.trim() ? `WHERE ${this._whereClause.trim()}` : ""}
-    `.trim();
+    //     return `
+    // SELECT ${this._columns.join(", ").trim()}
+    // FROM ${this._fromClause.trim()}
+    // ${this._joinClause.trim()}
+    // ${!!this._whereClause.trim() ? `WHERE ${this._whereClause.trim()}` : ""}
+    //     `.trim();
+    return [
+      `SELECT ${this._columns.join(", ").trim()}`,
+      `FROM ${this._fromClause.trim()}`,
+      this._joinClause.trim(),
+      this._whereClause ? `WHERE ${this._whereClause}` : "",
+    ].join("\n");
   }
 
   private parseWhereClause(
