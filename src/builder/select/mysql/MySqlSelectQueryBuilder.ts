@@ -11,8 +11,8 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
   private constructor() {}
 
-  static getBuilder() {
-    return new this() as Pick<MySqlSelectQueryBuilder<any>, "select">;
+  static getBuilder<T extends readonly string[]>() {
+    return new this() as Pick<MySqlSelectQueryBuilder<T>, "select">;
   }
 
   select<P extends T>(columns: P) {
@@ -34,7 +34,13 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
-      "where" | "execute" | "innerJoin" | "leftJoin" | "rightJoin" | "getQuery"
+      | "where"
+      | "find"
+      | "findOne"
+      | "innerJoin"
+      | "leftJoin"
+      | "rightJoin"
+      | "getQuery"
     >;
   }
   innerJoin(joinTable: string) {
@@ -51,7 +57,7 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
-      "where" | "execute" | "getQuery"
+      "where" | "find" | "findOne" | "getQuery"
     >;
   }
   where(
@@ -65,7 +71,7 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
-      "execute" | "andWhere" | "orWhere" | "getQuery"
+      "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
     >;
   }
   andWhere(
@@ -83,7 +89,7 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
-      "execute" | "andWhere" | "orWhere" | "getQuery"
+      "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
     >;
   }
   orWhere(
@@ -101,10 +107,42 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
     return this as Pick<
       MySqlSelectQueryBuilder<typeof this._columns>,
-      "execute" | "andWhere" | "orWhere" | "getQuery"
+      "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
     >;
   }
-  async execute(): Promise<
+
+  async find(): Promise<
+    {
+      [Key in T[number] as Key extends  // ColumnName As C:number
+      `${string} ${As} ${infer Column}:${NumberSuffix | StringSuffix}`
+        ? `${Column}`
+        : // C.ColumnName:number
+        Key extends `${string}.${infer Column}:${NumberSuffix | StringSuffix}`
+        ? `${Column}`
+        : Key extends  // ColumnName AS C
+          `${string} ${As} ${infer Column}`
+        ? `${Column}`
+        : // ColumnName:number
+        Key extends `${infer Column}:${NumberSuffix | StringSuffix}`
+        ? `${Column}`
+        : // C.ColumnName
+        Key extends `${string}.${infer Column}`
+        ? `${Column}`
+        : // ColumnName
+        Key extends `${infer Column}`
+        ? Column
+        : never]: Key extends  // // ColumnName AS CN
+      `${string}:${NumberSuffix}`
+        ? number
+        : Key extends `${string}:${StringSuffix}`
+        ? string
+        : string;
+    }[]
+  > {
+    return [] as any;
+  }
+
+  async findOne(): Promise<
     {
       [Key in T[number] as Key extends  // ColumnName As C:number
       `${string} ${As} ${infer Column}:${NumberSuffix | StringSuffix}`

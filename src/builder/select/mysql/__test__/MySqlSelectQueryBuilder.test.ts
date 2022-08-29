@@ -7,7 +7,7 @@ describe("MySqlSelectQueryBuilder TEST", () => {
         "ID:number",
         "O.ID AS id:number",
         "O.OrderName AS orderName",
-        "O.TotalPrice AS totalPrice",
+        "O.TotalPrice AS totalPrice:number",
         "OI.OrderItemName AS orderItemName",
       ] as const)
       .from("Order AS O")
@@ -15,9 +15,11 @@ describe("MySqlSelectQueryBuilder TEST", () => {
       .on("O.ID = OI.OrderID")
       .where("O.OrderID = 1")
       .andWhere("O.OrderID IN (1,2,3,4,5)")
-      .execute();
+      .find();
 
-    console.log(result);
+    console.log(result[0].orderItemName);
+    const n1: string = result[0].orderItemName;
+    console.log(n1);
 
     const result2 = await MySqlSelectQueryBuilder.getBuilder()
       .select([
@@ -30,7 +32,9 @@ describe("MySqlSelectQueryBuilder TEST", () => {
       .on("U.ID = O.UserID")
       .where("U.ID=123")
       .andWhere("O.TotalPrice > 3000")
-      .getQuery();
+      .findOne();
+
+    const n1: number = result2.userName;
 
     console.log(result2);
   });
