@@ -1,8 +1,8 @@
-import { MySqlSelectQueryBuilder } from "../MySqlSelectQueryBuilder";
+import { SelectQueryBuilder } from "../SelectQueryBuilder";
 
-describe("MySqlSelectQueryBuilder TEST", () => {
+describe("SelectQueryBuilder TEST", () => {
   it("TEST", async () => {
-    const result = await MySqlSelectQueryBuilder.getBuilder()
+    const result = await SelectQueryBuilder.getBuilder()
       .select([
         "ID:number",
         "O.ID AS id:number",
@@ -19,7 +19,7 @@ describe("MySqlSelectQueryBuilder TEST", () => {
 
     result[0].ID;
 
-    const result2 = await MySqlSelectQueryBuilder.getBuilder()
+    const result2 = await SelectQueryBuilder.getBuilder()
       .select([
         "U.ID AS id:number",
         "U.UserName AS userName",
@@ -34,7 +34,7 @@ describe("MySqlSelectQueryBuilder TEST", () => {
   });
 
   it("TEST2", async () => {
-    const result = await MySqlSelectQueryBuilder.getBuilder()
+    const result = await SelectQueryBuilder.getBuilder()
       .select(["A.ID AS id", "A.OrderName AS orderName"] as const)
       .from(
         (qb) => `(
@@ -52,7 +52,7 @@ describe("MySqlSelectQueryBuilder TEST", () => {
   });
 
   it("TEST3", async () => {
-    const result = await MySqlSelectQueryBuilder.getBuilder()
+    const result = await SelectQueryBuilder.getBuilder()
       .select(["A.ID AS id:number", "A.OrderName AS orderName"] as const)
       .from(
         (qb) => `(

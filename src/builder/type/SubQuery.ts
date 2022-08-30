@@ -1,5 +1,3 @@
-import { MySqlSelectQueryBuilder } from "../select/mysql/MySqlSelectQueryBuilder";
+import { SelectQueryBuilder } from "../select/SelectQueryBuilder";
 
-export type SubQuery = (
-  qb: Pick<MySqlSelectQueryBuilder<any>, "select">
-) => string;
+export type SubQuery = (qb: Pick<SelectQueryBuilder<any>, "select">) => string;
