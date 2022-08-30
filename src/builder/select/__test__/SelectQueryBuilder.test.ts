@@ -24,9 +24,26 @@ describe("SelectQueryBuilder TEST", () => {
         "U.ID AS id:number",
         "U.UserName AS userName",
         "O.TotalPrice:number",
+        "O.AdminId:number?",
       ] as const)
       .from("UserInfo AS U")
       .innerJoin("Order AS O")
+      .on("U.ID = O.UserID")
+      .where("U.ID=123")
+      .andWhere("O.TotalPrice > 3000")
+      .findOne();
+
+    result2.AdminId;
+
+    const result3 = await SelectQueryBuilder.getBuilder()
+      .select([
+        "U.ID AS id:number",
+        "U.UserName AS userName",
+        "O.TotalPrice:number",
+        "O.AdminId:number?",
+      ] as const)
+      .from("UserInfo AS U")
+      .innerJoin("OrderAS O")
       .on("U.ID = O.UserID")
       .where("U.ID=123")
       .andWhere("O.TotalPrice > 3000")

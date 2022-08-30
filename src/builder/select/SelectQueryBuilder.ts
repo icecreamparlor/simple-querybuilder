@@ -3,10 +3,9 @@ import { OnClause } from "../type";
 import { SelectReturnType } from "../type/SelectReturnType";
 
 export class SelectQueryBuilder<T extends readonly string[]> {
-  private _columns: T;
+  private _columns: T = [] as any;
   private _fromClause = "";
   private _joinClause = "";
-  // private _onClause = "";
   private _whereClause = "";
 
   private constructor() {}
@@ -15,27 +14,29 @@ export class SelectQueryBuilder<T extends readonly string[]> {
     return new this() as Pick<SelectQueryBuilder<any>, "select">;
   }
 
-  select<P extends T>(columns: P) {
+  select<P extends T>(columns: P): Pick<SelectQueryBuilder<P>, "from"> {
     this._columns = columns;
 
-    return this as Pick<SelectQueryBuilder<P>, "from">;
+    return this;
   }
-  from(tableName: string | SubQuery) {
+  from(
+    tableName: string | SubQuery
+  ): Pick<
+    SelectQueryBuilder<T>,
+    | "where"
+    | "find"
+    | "findOne"
+    | "innerJoin"
+    | "leftJoin"
+    | "rightJoin"
+    | "getQuery"
+  > {
     this._fromClause =
       typeof tableName === "function"
         ? tableName(SelectQueryBuilder.getBuilder())
         : tableName;
 
-    return this as Pick<
-      SelectQueryBuilder<typeof this._columns>,
-      | "where"
-      | "find"
-      | "findOne"
-      | "innerJoin"
-      | "leftJoin"
-      | "rightJoin"
-      | "getQuery"
-    >;
+    return this;
   }
   innerJoin(joinTable: string) {
     return this.join(joinTable, "inner");
@@ -46,41 +47,36 @@ export class SelectQueryBuilder<T extends readonly string[]> {
   rightJoin(joinTable: string) {
     return this.join(joinTable, "right");
   }
-  on(onClause: OnClause) {
+  on(
+    onClause: OnClause
+  ): Pick<SelectQueryBuilder<T>, "where" | "find" | "findOne" | "getQuery"> {
     this._joinClause += `\n ON ${onClause}`;
 
-    return this as Pick<
-      SelectQueryBuilder<typeof this._columns>,
-      "where" | "find" | "findOne" | "getQuery"
-    >;
+    return this;
   }
   where(
-    whereClause:
-      | string
-      | (<T extends readonly string[]>(qb: SelectQueryBuilder<T>) => string)
-  ) {
+    whereClause: string | SubQuery
+  ): Pick<
+    SelectQueryBuilder<T>,
+    "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
+  > {
     this._whereClause += this.parseWhereClause(whereClause);
 
-    return this as Pick<
-      SelectQueryBuilder<typeof this._columns>,
-      "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
-    >;
+    return this;
   }
   andWhere(
-    whereClause:
-      | string
-      | (<T extends readonly string[]>(qb: SelectQueryBuilder<T>) => string)
-  ) {
+    whereClause: string | SubQuery
+  ): Pick<
+    SelectQueryBuilder<T>,
+    "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
+  > {
     this._whereClause += `
     AND (
       ${this.parseWhereClause(whereClause)}
     )
     `;
 
-    return this as Pick<
-      SelectQueryBuilder<typeof this._columns>,
-      "find" | "findOne" | "andWhere" | "orWhere" | "getQuery"
-    >;
+    return this;
   }
   orWhere(whereClause: string | SubQuery) {
     this._whereClause += `
