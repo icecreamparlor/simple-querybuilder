@@ -1,16 +1,14 @@
-import { As, NumberSuffix, StringSuffix } from "./SqlClause";
+import { As, ColumnTypeSuffix, NumberSuffix, StringSuffix } from "./SqlClause";
 
 export type SelectReturnType<T extends readonly string[]> = {
   [Key in T[number] as Key extends  // ColumnName As C:number
-  `${string} ${As} ${infer Column}:${NumberSuffix | StringSuffix}${string}`
+  `${string} ${As} ${infer Column}:${ColumnTypeSuffix}${string}`
     ? `${Column}`
     : // C.ColumnName:number
-    Key extends `${string}.${infer Column}:${
-        | NumberSuffix
-        | StringSuffix}${string}`
+    Key extends `${string}.${infer Column}:${ColumnTypeSuffix}${string}`
     ? `${Column}`
     : // ColumnName:number
-    Key extends `${infer Column}:${NumberSuffix | StringSuffix}${string}`
+    Key extends `${infer Column}:${ColumnTypeSuffix}${string}`
     ? `${Column}`
     : Key extends  // ColumnName AS C
       `${string} ${As} ${infer Column}`
