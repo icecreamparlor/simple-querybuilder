@@ -14,8 +14,8 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
   private constructor() {}
 
-  static getBuilder<T extends readonly string[]>() {
-    return new this() as Pick<MySqlSelectQueryBuilder<T>, "select">;
+  static getBuilder() {
+    return new this() as Pick<MySqlSelectQueryBuilder<any>, "select">;
   }
 
   select<P extends T>(columns: P) {
@@ -23,16 +23,10 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
     return this as Pick<MySqlSelectQueryBuilder<P>, "from">;
   }
-  from(
-    tableName:
-      | string
-      | (<T extends readonly string[]>(
-          qb: MySqlSelectQueryBuilder<T>
-        ) => string)
-  ) {
+  from(tableName: string | SubQuery) {
     this._fromClause =
       typeof tableName === "function"
-        ? tableName(MySqlSelectQueryBuilder.getBuilder<any>())
+        ? tableName(MySqlSelectQueryBuilder.getBuilder())
         : tableName;
 
     return this as Pick<
@@ -127,7 +121,7 @@ export class MySqlSelectQueryBuilder<T extends readonly string[]>
 
   private parseWhereClause(whereClause: string | SubQuery) {
     return typeof whereClause === "function"
-      ? whereClause<T>(MySqlSelectQueryBuilder.getBuilder())
+      ? whereClause(MySqlSelectQueryBuilder.getBuilder())
       : whereClause;
   }
 
